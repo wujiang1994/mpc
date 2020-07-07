@@ -1,0 +1,18 @@
+*.0
+*.a
+*.so
+*.out
+
+#Folders
+/bin
+/pkg
+/src
+
+*.exe
+*.test
+*.prof
+
+# temp files
+.idea
+tmp/
+log/

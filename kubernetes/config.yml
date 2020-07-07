@@ -1,0 +1,91 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: base
+  namespace: mpc
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: base
+    spec:
+      containers:
+        - name: base
+          env:
+            - name: RUNNING_MODE
+              value: "dev"
+          image: 192.168.108.133:5000/mpc-base:1.0.0
+          ports:
+            - containerPort: 5040
+            - containerPort: 5050
+            - containerPort: 5060
+          imagePullPolicy: Always
+        - image: jaegertracing/jaeger-agent
+          name: jaeger-agent
+          ports:
+            - containerPort: 5775
+              protocol: UDP
+            - containerPort: 6831
+              protocol: UDP
+            - containerPort: 6832
+              protocol: UDP
+            - containerPort: 5778
+              protocol: TCP
+          args: ["--collector.host-port=tracer-jaeger-collector.open-tracing.svc:14267"]
+      imagePullSecrets:
+        - name: mpc
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name:  base
+  namespace: mpc
+spec:
+  selector:
+    app:  base
+  ports:
+    - name: restfulapi
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+    #- name: debug
+    #  protocol: TCP
+    #  port: 5060
+    #  targetPort: 5060
+    #- name: grpc
+    #  protocol: TCP
+    #  port: 5040
+    #  targetPort: 5040
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: base
+  namespace: mpc
+  annotations:
+    kubernetes.io/ingress.class: "public-nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: "/mpc/base"
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://www.baidu.com,https://www.google.com"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, X-Method, X-Timestamp, X-Signature, Content-Type, X-Server"
+spec:
+  tls:
+    - hosts:
+        - staging.wayne.com
+      secretName: wayne-tls
+  rules:
+    - host: "staging.wayne.com"
+      http:
+        paths:
+          - path: /mpc/base
+            backend:
+              serviceName: base
+              servicePort: 9000
