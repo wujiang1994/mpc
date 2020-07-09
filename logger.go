@@ -1,7 +1,7 @@
 package mpc
 
 import (
-	"fmt"
+	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/diode"
 	"io/ioutil"
@@ -32,7 +32,6 @@ func NewAppLogger(options ...*LoggerConfig) *AppLogger {
 	default:
 		loggerOnce.Do(func() {
 			var w = ioutil.Discard
-			fmt.Println(options[0].LoggerFileName())
 			wd, _ := os.Getwd()
 			fd, err := os.OpenFile(wd+options[0].LoggerFileName(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 			if err != nil {
@@ -50,6 +49,7 @@ func NewAppLogger(options ...*LoggerConfig) *AppLogger {
 	}
 	return &AppLogger{
 		zlog: globalLogger.zlog.With().Timestamp().Logger(),
+		id:   xid.New().String(),
 	}
 }
 

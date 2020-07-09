@@ -8,7 +8,6 @@ func CORS() HandlerFunc {
 		ctx.Response.Header().Set("Access-Control-Max-Age", "600")
 		ctx.Response.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
 		ctx.Response.Header().Set("Access-Control-Allow-Headers", "token,Keep-Alive,User-Agent,X-Requested-With,Cache-Control,Content-Type,Authorization")
-		ctx.Next()
 	}
 }
 

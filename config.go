@@ -7,14 +7,17 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 )
 
 type AppConfig struct {
-	Name    string                  `yaml:"name"`
-	Mode    RunMode                 `yaml:"mode"`
-	Logger  *LoggerConfig           `yaml:"logger"`
-	Section map[RunMode]interface{} `yaml:"section"`
+	Name       string                  `yaml:"name"`
+	Mode       RunMode                 `yaml:"mode"`
+	Logger     *LoggerConfig           `yaml:"logger"`
+	RestServer *RestServerConfig       `yaml:"rest_server"`
+	GRPCServer *GRPCServerConfig       `yaml:"grpc_server"`
+	Section    map[RunMode]interface{} `yaml:"section"`
 
 	mux      sync.RWMutex
 	filename string
@@ -25,6 +28,34 @@ type LoggerConfig struct {
 	Filename string `yaml:"filename"`
 	Ext      string `yaml:"ext"`
 	Level    string `yaml:"level"`
+}
+
+type RestServerConfig struct {
+	NetWork         string `yaml:"network"`
+	Addr            string `yaml:"addr"`
+	Port            int    `yaml:"port"`
+	RequestTimeout  int    `yaml:"request_timeout"`
+	ResponseTimeout int    `yaml:"response_timeout"`
+	ConnectTimeout  int    `yaml:"connect_timeout"`
+	MaxHeaderBytes  int    `yaml:"max_header_bytes"`
+
+	Ssl     bool   `yaml:"ssl"`
+	SslKey  string `yaml:"ssl_key"`  // path
+	SslCert string `yaml:"ssl_cert"` // path
+}
+
+type GRPCServerConfig struct {
+	NetWork         string `yaml:"network"`
+	Addr            string `yaml:"addr"`
+	Port            int    `yaml:"port"`
+	RequestTimeout  int    `yaml:"request_timeout"`
+	ResponseTimeout int    `yaml:"response_timeout"`
+	ConnectTimeout  int    `yaml:"connect_timeout"`
+	MaxHeaderBytes  int    `yaml:"max_header_bytes"`
+
+	Ssl     bool   `yaml:"ssl"`
+	SslKey  string `yaml:"ssl_key"`  // path
+	SslCert string `yaml:"ssl_cert"` // path
 }
 
 func NewAppConfig(runMode, cfgPath string) (config *AppConfig, err error) {
@@ -52,10 +83,6 @@ func (f *AppConfig) RunMode() RunMode {
 	return f.Mode
 }
 
-func (f *AppConfig) RunName() string {
-	return f.filename
-}
-
 func (f *AppConfig) SetMode(mode RunMode) {
 	f.mux.Lock()
 	defer f.mux.Unlock()
@@ -64,6 +91,22 @@ func (f *AppConfig) SetMode(mode RunMode) {
 		return
 	}
 	f.Mode = mode
+}
+
+func (f *AppConfig) RunName() string {
+	return f.filename
+}
+
+func (f *AppConfig) LoggerConfig() *LoggerConfig {
+	return f.Logger
+}
+
+func (f *AppConfig) RestServerConfig() *RestServerConfig {
+	return f.RestServer
+}
+
+func (f *AppConfig) GRPCServerConfig() *GRPCServerConfig {
+	return f.GRPCServer
 }
 
 func (f *AppConfig) UnmarshalYaml(v interface{}) error {
@@ -97,4 +140,10 @@ func (l *LoggerConfig) LoggerLevel() zerolog.Level {
 		return zerolog.ErrorLevel
 	}
 	return zerolog.InfoLevel
+}
+
+func (r *RestServerConfig) Bind() (network string, addr string) {
+	network = r.NetWork
+	addr = r.Addr + ":" + strconv.Itoa(r.Port)
+	return
 }

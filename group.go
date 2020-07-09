@@ -1,10 +1,11 @@
 package mpc
 
 import (
+	"github.com/rs/xid"
+	"mpc/utils"
 	"net/http"
 	"path"
 	"sync"
-	"mpc/utils"
 )
 
 type AppGroup struct {
@@ -48,8 +49,28 @@ func (a *AppGroup) OPTIONS(uri string, handler HandlerFunc) {
 	a.Handler(http.MethodOptions, uri, handler)
 }
 
+func (a *AppGroup) HEAD(uri string, handler HandlerFunc) {
+	a.Handler(http.MethodHead, uri, handler)
+}
+
+func (a *AppGroup) POST(uri string, handler HandlerFunc) {
+	a.Handler(http.MethodPost, uri, handler)
+}
+
 func (a *AppGroup) GET(uri string, handler HandlerFunc) {
 	a.Handler(http.MethodGet, uri, handler)
+}
+
+func (a *AppGroup) PUT(uri string, handler HandlerFunc) {
+	a.Handler(http.MethodPut, uri, handler)
+}
+
+func (a *AppGroup) PATCH(uri string, handler HandlerFunc) {
+	a.Handler(http.MethodPatch, uri, handler)
+}
+
+func (a *AppGroup) DELETE(uri string, handler HandlerFunc) {
+	a.Handler(http.MethodDelete, uri, handler)
 }
 
 func (a *AppGroup) Handler(method, uri string, handler HandlerFunc) {
@@ -67,11 +88,15 @@ func (a *AppGroup) HandlerFunc(method, uri string, handler http.HandlerFunc) {
 
 func (a *AppGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := new(Context)
-	c.Request = r
+	id := xid.New().String()
+	c.Request = &Request{
+		Request:   r,
+		requestID: id,
+		Prams:     NewPrams(r),
+		Logger:    globalLogger.New(id),
+	}
 	c.Response = &Response{
 		ResponseWriter: w,
-		status:         0,
-		code:           0,
 	}
 	if len(a.route[c.Request.URL.Path]) == 0 {
 		NotFoundHandler.ServeHTTP(w, r)
@@ -83,7 +108,7 @@ func (a *AppGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	c.handlers = append(c.handlers, a.middleware...)
 	c.handlers = append(c.handlers, a.route[c.Request.URL.Path][c.Request.Method])
-	c.Next()
+	c.Do()
 	return
 }
 

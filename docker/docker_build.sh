@@ -3,8 +3,8 @@
 set -e
 set -o pipefail
 PROJECT_NAME="mpc"
-MODULE="base"
-IMAGE_NAME=${PROJECT_NAME}-${MODULE}
+MODULE="test"
+IMAGE_NAME=${PROJECT_NAME}_${MODULE}
 REGISTRY_HOST="127.0.0.1:5000"
 
 # Get the version of current image
@@ -20,10 +20,16 @@ echo Begin to build docker image ${IMAGE_NAME}:${VERSION}
 echo The enviroment parameter GOPATH is ${GOPATH}
 
 # context
-docker build -t ${REGISTRY_HOST}/${IMAGE_NAME}:${VERSION} -f ../build/Dockerfile ..
+docker build -t ${REGISTRY_HOST}/${IMAGE_NAME}:${VERSION} -f ./Dockerfile ../
 
 # delete build
 docker image prune -f
+
+# run local
+docker run -d -p 5000:5000 --name=${IMAGE_NAME} ${REGISTRY_HOST}/${IMAGE_NAME}:${VERSION}
+
+# echo logs
+# docker logs -f ${IMAGE_NAME}
 
 # docker push ${REGISTRY_HOST}/${IMAGE_NAME}:${VERSION}
 

@@ -2,31 +2,17 @@ package mpc
 
 import (
 	"net/http"
-	"sync"
 )
-
-type Context struct {
-	Response *Response
-	Request  *http.Request
-	mux      sync.RWMutex
-	index    int8
-	handlers []HandlerFunc
-}
-
-type Response struct {
-	http.ResponseWriter
-
-	mux    sync.RWMutex
-	status int
-	code   int
-}
 
 type HandlerFunc func(ctx *Context)
 
 type Configer interface {
 	RunMode() RunMode
-	RunName() string
 	SetMode(mode RunMode)
+	RunName() string
+	LoggerConfig() *LoggerConfig
+	RestServerConfig() *RestServerConfig
+	GRPCServerConfig() *GRPCServerConfig
 	UnmarshalYaml(v interface{}) error
 }
 
@@ -35,22 +21,20 @@ type Grouper interface {
 	Use(filter ...HandlerFunc)
 	Resource(uri string, resource interface{}) Grouper
 	OPTIONS(uri string, handler HandlerFunc)
-	//HEAD(uri string, handler Middleware)
-	//POST(uri string, handler Middleware)
+	HEAD(uri string, handler HandlerFunc)
+	POST(uri string, handler HandlerFunc)
 	GET(uri string, handler HandlerFunc)
-	//PUT(uri string, handler Middleware)
-	//PATCH(uri string, handler Middleware)
-	//DELETE(uri string, handler Middleware)
-	//Any(uri string, handler Middleware)
+	PUT(uri string, handler HandlerFunc)
+	PATCH(uri string, handler HandlerFunc)
+	DELETE(uri string, handler HandlerFunc)
 	Handler(method, uri string, fn HandlerFunc)
 	HandlerFunc(method, uri string, fn http.HandlerFunc)
 	//Handler(method, uri string, handler http.Handler)
-	//Handle(method, uri string, handler Middleware)
+	//Handle(method, uri string, handler HandlerFunc)
 	////MountRPC(method string, rpc RPCService)
-	//MockHandle(method, uri string, recorder http.ResponseWriter, handler Middleware)
+	//MockHandle(method, uri string, recorder http.ResponseWriter, handler HandlerFunc)
 }
 
-// A Service represents RESTful service interface of pedestal.
 type RestService interface {
 	Init(config Configer, group Grouper)
 	Filters()
@@ -88,4 +72,8 @@ type Logger interface {
 	Errorf(format string, v ...interface{})
 	Fatal(v ...interface{})
 	Fatalf(format string, v ...interface{})
+}
+
+type Output interface {
+	GetStatus() int
 }

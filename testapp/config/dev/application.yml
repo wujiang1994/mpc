@@ -2,10 +2,35 @@ name: testapp
 mode: dev
 
 logger: &default_logger
-  output: /log/
+  output: /testapp/log/ #adjust for test
   filename: testapp
   ext: .log
   level: debug
+
+rest_server: &default_rest_server
+  network: tcp
+  addr: 0.0.0.0
+  port: 5000
+  request_timeout: 2
+  response_timeout: 2
+  connect_timeout: 10
+  max_header_bytes: 1024
+  ssl: false
+  ssl_key:
+  ssl_cert:
+
+grpc_server: &default_grpc_server
+  network: tcp
+  addr: 0.0.0.0
+  port: 5000
+  request_timeout: 2
+  response_timeout: 2
+  connect_timeout: 10
+  max_header_bytes: 1048576 # 1MB
+  ssl: false
+  ssl_key:
+  ssl_cert:
+
 section:
   dev:
     id: 1

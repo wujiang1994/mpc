@@ -1,13 +1,14 @@
 package config
 
 import (
+	"mpc"
 	"testing"
-	"wujiang/code"
 )
 
 func Test_Config(t *testing.T) {
+	runMode := "dev"
 	path := "/dev/application.yml"
-	c, err := code.NewAppConfig(path)
+	c, err := mpc.NewAppConfig(runMode, path)
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,6 +37,6 @@ type RedisConfig struct {
 	Port int64  `yaml:"port"`
 }
 
-func NewConfig(c code.Configer) error {
+func NewConfig(c mpc.Configer) error {
 	return c.UnmarshalYaml(&Config)
 }

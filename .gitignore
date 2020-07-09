@@ -15,4 +15,4 @@
 # temp files
 .idea
 tmp/
-log/
+testapp/log

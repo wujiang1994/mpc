@@ -1,21 +1,31 @@
 package mpc
 
 import (
-	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 func (s *AppServer) serveREST() {
 	defer s.wg.Done()
-	conn, err := net.Listen("tcp", "0.0.0.0:5000")
+	restConfig := s.config.RestServerConfig()
+	network, addr := s.config.RestServerConfig().Bind()
+	conn, err := net.Listen(network, addr)
 	if err != nil {
-		log.Printf("listeners.Listen: %v", err)
-		return
+		panic(err)
 	}
 	s.rest = &http.Server{
-		Addr:              "0.0.0.0:5000",
+		Addr:              addr,
 		Handler:           s.AppGroup,
+		ReadTimeout:       time.Duration(restConfig.RequestTimeout) * time.Second,
+		ReadHeaderTimeout: time.Duration(restConfig.RequestTimeout) * time.Second,
+		WriteTimeout:      time.Duration(restConfig.ResponseTimeout) * time.Second,
+		IdleTimeout:       time.Duration(restConfig.ConnectTimeout) * time.Second,
+		MaxHeaderBytes:    restConfig.MaxHeaderBytes,
 	}
-	s.rest.Serve(conn)
+	if s.config.RestServerConfig().Ssl {
+		s.rest.ServeTLS(conn, restConfig.SslCert, restConfig.SslKey)
+	} else {
+		s.rest.Serve(conn)
+	}
 }

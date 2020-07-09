@@ -1,11 +1,45 @@
 package mpc
 
-import "net/http"
+import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"sync"
+)
 
-func (c *Context) Next() {
-	for c.index < int8(len(c.handlers)) {
-		c.handlers[c.index](c)
-		c.index++
+type Context struct {
+	Response *Response
+	Request  *Request
+	mux      sync.RWMutex
+	handlers []HandlerFunc
+}
+
+type Request struct {
+	*http.Request
+
+	requestID string
+	Prams     *Prams
+	Logger    Logger
+}
+
+type Prams struct {
+	*http.Request
+	rawBody []byte
+	rawErr  error
+}
+
+type Response struct {
+	http.ResponseWriter
+
+	mux    sync.RWMutex
+	status int
+	code   int
+}
+
+func (c *Context) Do() {
+	for _, handler := range c.handlers {
+		handler(c)
 	}
 }
 
@@ -22,7 +56,7 @@ func (c *Context) SetHeader(key, value string) {
 	c.Response.Header().Set(key, value)
 }
 
-func (c *Context) AddHeader(key, value string)  {
+func (c *Context) AddHeader(key, value string) {
 	c.Response.Header().Add(key, value)
 }
 
@@ -30,15 +64,40 @@ func (c *Context) SetStatus(status int) {
 	c.Response.status = status
 }
 
-func (c *Context) Json(data interface{}) error {
+func (c *Context) Json(data Output) error {
 	return c.Return(NewJsonRender(c.Response), data)
 }
 
-func (c *Context) Return(rr Render, data interface{}) error {
+func (c *Context) Return(rr Render, data Output) error {
 	if data == nil {
 		return nil
 	}
 	c.SetHeader("Content-Type", rr.ContentType())
-	c.SetStatus(http.StatusCreated)
+	c.SetStatus(http.StatusOK)
+	if data.GetStatus() > 0 {
+		c.SetStatus(data.GetStatus())
+	}
 	return rr.Render(data)
+}
+
+func NewPrams(r *http.Request) *Prams {
+	return &Prams{
+		Request: r,
+	}
+}
+
+func (p *Prams) Get(key string) string {
+	return p.URL.Query().Get(key)
+}
+
+func (p *Prams) Json(v interface{}) error {
+	p.rawBody, p.rawErr = ioutil.ReadAll(p.Body)
+
+	if p.rawErr != nil {
+		return p.rawErr
+	}
+	p.Body.Close()
+	p.Body = ioutil.NopCloser(bytes.NewReader(p.rawBody))
+
+	return json.Unmarshal(p.rawBody, v)
 }
