@@ -3,6 +3,7 @@ package controllers
 import (
 	"mpc"
 	"mpc/testapp/app/errors"
+	"mpc/testapp/app/pbs"
 	"mpc/testapp/app/services"
 	"net/http"
 )
@@ -29,6 +30,7 @@ func (a *Application) Filters() {
 
 func (a *Application) Resources() {
 	a.Routes()
+	a.v1.MountRPC(pbs.Pet)
 }
 
 func (a *Application) Routes() {

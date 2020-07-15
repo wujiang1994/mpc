@@ -86,6 +86,14 @@ func (a *AppGroup) Handler(method, uri string, handler HandlerFunc) {
 func (a *AppGroup) HandlerFunc(method, uri string, handler http.HandlerFunc) {
 }
 
+func (a *AppGroup) MountRPC(rpc GRPCService) {
+	a.mux.Lock()
+	defer a.mux.Unlock()
+
+	a.server.grpcServices = append(a.server.grpcServices, rpc)
+}
+
+
 func (a *AppGroup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := new(Context)
 	id := xid.New().String()

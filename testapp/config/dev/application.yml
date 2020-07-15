@@ -22,7 +22,7 @@ rest_server: &default_rest_server
 grpc_server: &default_grpc_server
   network: tcp
   addr: 0.0.0.0
-  port: 5000
+  port: 5050
   request_timeout: 2
   response_timeout: 2
   connect_timeout: 10

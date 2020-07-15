@@ -23,7 +23,7 @@ type AppServer struct {
 	grpc *grpc.Server
 
 	restListener net.Listener
-	restServices []RPCService
+	grpcServices []GRPCService
 }
 
 func NewAppServer(runMode, cfgPath string) *AppServer {
@@ -34,8 +34,9 @@ func NewAppServer(runMode, cfgPath string) *AppServer {
 	SetupLogger(config.Logger)
 
 	srv := &AppServer{
-		config:    config,
-		requestID: "default",
+		config:       config,
+		requestID:    "default",
+		grpcServices: make([]GRPCService, 0),
 	}
 
 	srv.once.Do(func() {
@@ -65,7 +66,8 @@ func (s *AppServer) NewServer(svc RestService) *AppServer {
 }
 
 func (s *AppServer) Run() {
-	s.wg.Add(1)
+	s.wg.Add(2)
 	go s.serveREST()
+	go s.serveGRPC()
 	s.wg.Wait()
 }

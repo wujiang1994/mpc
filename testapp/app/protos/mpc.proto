@@ -1,0 +1,38 @@
+syntax = "proto3";
+package mpc;
+
+import "common.proto";
+
+option go_package = "pbs";
+
+service Pet {
+    rpc GetPet (GetPetInput) returns (GetPetOutput) {
+    };
+    rpc SetPet (SetPetInput) returns (SetPetOutput) {
+    };
+}
+
+message GetPetInput {
+    int64 user_id = 1;
+}
+
+message GetPetOutput {
+    BaseOutput base = 1;
+    map<int64, AnimalType> animal = 2;
+}
+
+enum AnimalType {
+    Dog = 0;
+    Cat = 1;
+    Pig = 2;
+}
+
+message SetPetInput {
+    int64 user_id = 1;
+    int64 animal_id = 2;
+    string animal_type = 3;
+}
+
+message SetPetOutput {
+    BaseOutput base = 1;
+}

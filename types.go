@@ -1,6 +1,7 @@
 package mpc
 
 import (
+	"google.golang.org/grpc"
 	"net/http"
 )
 
@@ -31,7 +32,7 @@ type Grouper interface {
 	HandlerFunc(method, uri string, fn http.HandlerFunc)
 	//Handler(method, uri string, handler http.Handler)
 	//Handle(method, uri string, handler HandlerFunc)
-	////MountRPC(method string, rpc RPCService)
+	MountRPC(rpc GRPCService)
 	//MockHandle(method, uri string, recorder http.ResponseWriter, handler HandlerFunc)
 }
 
@@ -42,11 +43,8 @@ type RestService interface {
 }
 
 // additional methods for accessing metadata about the service.
-type RPCService interface {
-	Version() string
-	ServiceNames() []string
-	ServiceRegistry(prefix string) []ServiceHandler
-	ServiceDescriptor() ([]byte, int)
+type GRPCService interface {
+	Register(gs *grpc.Server)
 }
 
 type ServiceHandler struct {

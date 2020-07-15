@@ -147,3 +147,9 @@ func (r *RestServerConfig) Bind() (network string, addr string) {
 	addr = r.Addr + ":" + strconv.Itoa(r.Port)
 	return
 }
+
+func (r *GRPCServerConfig) Bind() (network string, addr string) {
+	network = r.NetWork
+	addr = r.Addr + ":" + strconv.Itoa(r.Port)
+	return
+}

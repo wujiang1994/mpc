@@ -16,3 +16,7 @@
 .idea
 tmp/
 testapp/log
+
+docker/docker_build.sh
+docker/Dockerfile
+kubernetes/config.yml
