@@ -8,6 +8,9 @@
 /pkg
 /src
 
+/docker
+/kubernetes
+
 *.exe
 *.test
 *.prof
@@ -16,6 +19,3 @@
 .idea
 tmp/
 testapp/log
-
-docker/
-kubernetes/
