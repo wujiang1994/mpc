@@ -30,10 +30,7 @@ type Grouper interface {
 	DELETE(uri string, handler HandlerFunc)
 	Handler(method, uri string, fn HandlerFunc)
 	HandlerFunc(method, uri string, fn http.HandlerFunc)
-	//Handler(method, uri string, handler http.Handler)
-	//Handle(method, uri string, handler HandlerFunc)
 	MountRPC(rpc GRPCService)
-	//MockHandle(method, uri string, recorder http.ResponseWriter, handler HandlerFunc)
 }
 
 type RestService interface {
@@ -45,12 +42,6 @@ type RestService interface {
 // additional methods for accessing metadata about the service.
 type GRPCService interface {
 	Register(gs *grpc.Server)
-}
-
-type ServiceHandler struct {
-	Method  string
-	URI     string
-	Handler HandlerFunc
 }
 
 type Logger interface {
